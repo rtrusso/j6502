@@ -1,0 +1,312 @@
+package j6502;
+
+public interface J6502Constants {
+
+  /**
+   * This array, at index i, gives the size of the instruction in bytes
+   * for opcode i.  If i is not a valid opcode, the value is 0.
+   */
+  
+  int[] sizes = {
+    1, 2, 0, 0, 0, 2, 2, 0, 
+    1, 2, 1, 0, 0, 3, 3, 0, 
+    2, 2, 0, 0, 0, 2, 2, 0, 
+    1, 3, 0, 0, 0, 3, 3, 0, 
+    3, 2, 0, 0, 2, 2, 2, 0, 
+    1, 2, 1, 0, 3, 3, 3, 0, 
+    2, 2, 0, 0, 0, 2, 2, 0, 
+    1, 3, 0, 0, 0, 3, 3, 0, 
+    1, 2, 0, 0, 0, 2, 2, 0, 
+    1, 2, 1, 0, 3, 3, 3, 0, 
+    2, 2, 0, 0, 0, 2, 2, 0, 
+    1, 3, 0, 0, 0, 3, 3, 0, 
+    1, 2, 0, 0, 0, 2, 2, 0, 
+    1, 2, 1, 0, 3, 3, 3, 0, 
+    2, 2, 0, 0, 0, 2, 2, 0, 
+    1, 3, 0, 0, 0, 3, 3, 0, 
+    2, 2, 0, 0, 2, 2, 2, 0, 
+    1, 0, 1, 0, 3, 3, 3, 0, 
+    2, 2, 0, 0, 2, 2, 2, 0, 
+    1, 3, 1, 0, 0, 3, 0, 0, 
+    2, 2, 2, 0, 2, 2, 2, 0, 
+    1, 2, 1, 0, 3, 3, 3, 0, 
+    0, 2, 0, 0, 2, 2, 2, 0, 
+    1, 3, 1, 0, 3, 3, 3, 0, 
+    2, 2, 0, 0, 2, 2, 2, 0, 
+    1, 2, 1, 0, 3, 3, 3, 0, 
+    2, 2, 0, 0, 0, 2, 2, 0, 
+    1, 3, 0, 0, 0, 3, 3, 0, 
+    2, 2, 0, 0, 2, 2, 2, 0, 
+    1, 2, 1, 0, 3, 3, 3, 0, 
+    2, 2, 0, 0, 0, 2, 2, 0, 
+    1, 3, 0, 0, 0, 3, 3, 0
+  };
+  
+  int[] clocks = {
+    7, 6, 0, 0, 0, 3, 5, 0, 
+    3, 2, 2, 0, 0, 4, 6, 0, 
+    2, 5, 0, 0, 0, 4, 6, 0, 
+    2, 4, 0, 0, 0, 4, 7, 0, 
+    6, 6, 0, 0, 3, 3, 5, 0, 
+    4, 2, 2, 0, 4, 4, 6, 0, 
+    2, 5, 0, 0, 0, 4, 6, 0, 
+    2, 4, 0, 0, 0, 4, 7, 0, 
+    6, 6, 0, 0, 0, 3, 5, 0, 
+    3, 2, 2, 0, 3, 4, 6, 0, 
+    2, 5, 0, 0, 0, 4, 6, 0, 
+    2, 4, 0, 0, 0, 4, 7, 0, 
+    6, 6, 0, 0, 0, 3, 5, 0, 
+    4, 2, 2, 0, 5, 4, 6, 0, 
+    2, 5, 0, 0, 0, 4, 6, 0, 
+    2, 4, 0, 0, 0, 4, 7, 0, 
+    2, 6, 0, 0, 3, 3, 3, 0, 
+    2, 0, 2, 0, 4, 4, 4, 0, 
+    2, 6, 0, 0, 4, 4, 4, 0, 
+    2, 5, 2, 0, 0, 5, 0, 0, 
+    2, 6, 2, 0, 3, 3, 3, 0, 
+    2, 2, 2, 0, 4, 4, 4, 0, 
+    0, 5, 0, 0, 4, 4, 4, 0, 
+    2, 4, 2, 0, 4, 4, 4, 0, 
+    2, 6, 0, 0, 3, 3, 5, 0, 
+    2, 2, 2, 0, 4, 4, 6, 0, 
+    2, 5, 0, 0, 0, 4, 6, 0, 
+    2, 4, 0, 0, 0, 4, 7, 0, 
+    2, 6, 0, 0, 3, 3, 5, 0, 
+    2, 2, 2, 0, 4, 4, 6, 0, 
+    2, 5, 0, 0, 0, 4, 6, 0, 
+    2, 4, 0, 0, 0, 4, 7, 0
+  };
+  
+  /**
+   * This array, at index i, gives a value which encodes any exceptions
+   * to the clocks table for opcode i.  A 0 value indicates a bad opcode
+   *
+   * If the value is 0, there is no exception.  
+   * <p>
+   *
+   * If the value is 1, then the addressing mode is indexed, and when
+   * the index crosses a page boundary, 1 should be added to the value
+   * in the clocks table to get the correct number of clock cycles.
+   *
+   * </p>
+   * <p>
+   *
+   * If the value is 2, then this is a branch instruction.  Add 1 to the
+   * number of clock cycles if the branch is to the same page.  Add 2 if
+   * the branch is to a different page.
+   */
+  
+  int[] exceptions = {
+     0,  0, -1, -1, -1,  0,  0, -1, 
+     0,  0,  0, -1, -1,  0,  0, -1, 
+     2,  1, -1, -1, -1,  0,  0, -1, 
+     0,  1, -1, -1, -1,  1,  0, -1, 
+     0,  0, -1, -1,  0,  0,  0, -1, 
+     0,  0,  0, -1,  0,  0,  0, -1, 
+     2,  1, -1, -1, -1,  0,  0, -1, 
+     0,  1, -1, -1, -1,  1,  0, -1, 
+     0,  0, -1, -1, -1,  0,  0, -1, 
+     0,  0,  0, -1,  0,  0,  0, -1, 
+     2,  1, -1, -1, -1,  0,  0, -1, 
+     0,  1, -1, -1, -1,  1,  0, -1, 
+     0,  0, -1, -1, -1,  0,  0, -1, 
+     0,  0,  0, -1,  0,  0,  0, -1, 
+     2,  1, -1, -1, -1,  0,  0, -1, 
+     0,  1, -1, -1, -1,  1,  0, -1, 
+     2,  0, -1, -1,  0,  0,  0, -1, 
+     0, -1,  0, -1,  0,  0,  0, -1, 
+     2,  0, -1, -1,  0,  0,  0, -1, 
+     0,  0,  0, -1, -1,  0, -1, -1, 
+     0,  0,  0, -1,  0,  0,  0, -1, 
+     0,  0,  0, -1,  0,  0,  0, -1, 
+    -1,  1, -1, -1,  0,  0,  0, -1, 
+     0,  1,  0, -1,  0,  1,  1, -1, 
+     0,  0, -1, -1,  0,  0,  0, -1, 
+     0,  0,  0, -1,  0,  0,  0, -1, 
+     2,  1, -1, -1, -1,  0,  0, -1, 
+     0,  1, -1, -1, -1,  1,  0, -1, 
+     0,  0, -1, -1,  0,  0,  0, -1, 
+     0,  0,  0, -1,  0,  0,  0, -1, 
+     2,  1, -1, -1, -1,  0,  0, -1, 
+     0,  1, -1, -1, -1,  1,  0, -1
+  };
+  
+  /**
+   * This array, at index i, gives the mnemonic for the opcode i.
+   * An empty string indicates a bad opcode.
+   */
+  
+  String[] names = {
+    "BRK", "ORA",    "",    "",    "", "ORA", "ASL",    "", 
+    "PHP", "ORA", "ASL",    "",    "", "ORA", "ASL",    "", 
+    "BPL", "ORA",    "",    "",    "", "ORA", "ASL",    "", 
+    "CLC", "ORA",    "",    "",    "", "ORA", "ASL",    "", 
+    "JSR", "AND",    "",    "", "BIT", "AND", "ROL",    "", 
+    "PLP", "AND", "ROL",    "", "BIT", "AND", "ROL",    "", 
+    "BMI", "AND",    "",    "",    "", "AND", "ROL",    "", 
+    "SEC", "AND",    "",    "",    "", "AND", "ROL",    "", 
+    "RTI", "EOR",    "",    "",    "", "EOR", "LSR",    "", 
+    "PHA", "EOR", "LSR",    "", "JMP", "EOR", "LSR",    "", 
+    "BVC", "EOR",    "",    "",    "", "EOR", "LSR",    "", 
+    "CLI", "EOR",    "",    "",    "", "EOR", "LSR",    "", 
+    "RTS", "ADC",    "",    "",    "", "ADC", "ROR",    "", 
+    "PLA", "ADC", "ROR",    "", "JMP", "ADC", "ROR",    "", 
+    "BVS", "ADC",    "",    "",    "", "ADC", "ROR",    "", 
+    "SEI", "ADC",    "",    "",    "", "ADC", "ROR",    "", 
+    "BCS", "STA",    "",    "", "STY", "STA", "STX",    "", 
+    "DEY",    "", "TXA",    "", "STY", "STA", "STX",    "", 
+    "BCC", "STA",    "",    "", "STY", "STA", "STX",    "", 
+    "TYA", "STA", "TXS",    "",    "", "STA",    "",    "", 
+    "LDY", "LDA", "LDX",    "", "LDY", "LDA", "LDX",    "", 
+    "TAY", "LDA", "TAX",    "", "LDY", "LDA", "LDX",    "", 
+       "", "LDA",    "",    "", "LDY", "LDA", "LDX",    "", 
+    "CLV", "LDA", "TSX",    "", "LDY", "LDA", "LDX",    "", 
+    "CPY", "CMP",    "",    "", "CPY", "CMP", "DEC",    "", 
+    "INY", "CMP", "DEX",    "", "CPY", "CMP", "DEC",    "", 
+    "BNE", "CMP",    "",    "",    "", "CMP", "DEC",    "", 
+    "CLD", "CMP",    "",    "",    "", "CMP", "DEC",    "", 
+    "CPX", "SBC",    "",    "", "CPX", "SBC", "INC",    "", 
+    "INX", "SBC", "NOP",    "", "CPX", "SBC", "INC",    "", 
+    "BEQ", "SBC",    "",    "",    "", "SBC", "INC",    "", 
+    "SED", "SBC",    "",    "",    "", "SBC", "INC",    ""
+  };
+  
+  /**
+   * This array, at index i, gives the <code>AddressingMode</code>
+   * object which represents the addressing mode of opcode i.
+   * <code>null</code> indicates a bad opcode.
+   *
+   */
+  
+  AddressingMode[] modes = {
+                 AddressingMode.INHERENT,  AddressingMode.PRE_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+                                    null,             AddressingMode.ZP_DIRECT, 
+                AddressingMode.ZP_DIRECT,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.IMMEDIATE, 
+              AddressingMode.ACCUMULATOR,                                 null, 
+                                    null,                AddressingMode.DIRECT, 
+                   AddressingMode.DIRECT,                                 null, 
+             AddressingMode.JMP_RELATIVE, AddressingMode.POST_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+                                    null,          AddressingMode.ZP_INDEXED_X, 
+             AddressingMode.ZP_INDEXED_X,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.INDEXED_Y, 
+                                    null,                                 null, 
+                                    null,             AddressingMode.INDEXED_X, 
+                AddressingMode.INDEXED_X,                                 null, 
+               AddressingMode.JMP_DIRECT,  AddressingMode.PRE_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+                AddressingMode.ZP_DIRECT,             AddressingMode.ZP_DIRECT, 
+                AddressingMode.ZP_DIRECT,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.IMMEDIATE, 
+              AddressingMode.ACCUMULATOR,                                 null, 
+                   AddressingMode.DIRECT,                AddressingMode.DIRECT, 
+                   AddressingMode.DIRECT,                                 null, 
+             AddressingMode.JMP_RELATIVE, AddressingMode.POST_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+                                    null,          AddressingMode.ZP_INDEXED_X, 
+             AddressingMode.ZP_INDEXED_X,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.INDEXED_Y, 
+                                    null,                                 null, 
+                                    null,             AddressingMode.INDEXED_X, 
+                AddressingMode.INDEXED_X,                                 null, 
+                 AddressingMode.INHERENT,  AddressingMode.PRE_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+                                    null,             AddressingMode.ZP_DIRECT, 
+                AddressingMode.ZP_DIRECT,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.IMMEDIATE, 
+              AddressingMode.ACCUMULATOR,                                 null, 
+               AddressingMode.JMP_DIRECT,                AddressingMode.DIRECT, 
+                   AddressingMode.DIRECT,                                 null, 
+             AddressingMode.JMP_RELATIVE, AddressingMode.POST_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+                                    null,          AddressingMode.ZP_INDEXED_X, 
+             AddressingMode.ZP_INDEXED_X,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.INDEXED_Y, 
+                                    null,                                 null, 
+                                    null,             AddressingMode.INDEXED_X, 
+                AddressingMode.INDEXED_X,                                 null, 
+                 AddressingMode.INHERENT,  AddressingMode.PRE_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+                                    null,             AddressingMode.ZP_DIRECT, 
+                AddressingMode.ZP_DIRECT,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.IMMEDIATE, 
+              AddressingMode.ACCUMULATOR,                                 null, 
+             AddressingMode.JMP_INDIRECT,                AddressingMode.DIRECT, 
+                   AddressingMode.DIRECT,                                 null, 
+             AddressingMode.JMP_RELATIVE, AddressingMode.POST_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+                                    null,          AddressingMode.ZP_INDEXED_X, 
+             AddressingMode.ZP_INDEXED_X,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.INDEXED_Y, 
+                                    null,                                 null, 
+                                    null,             AddressingMode.INDEXED_X, 
+                AddressingMode.INDEXED_X,                                 null, 
+             AddressingMode.JMP_RELATIVE,  AddressingMode.PRE_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+                AddressingMode.ZP_DIRECT,             AddressingMode.ZP_DIRECT, 
+                AddressingMode.ZP_DIRECT,                                 null, 
+                 AddressingMode.INHERENT,                                 null, 
+                 AddressingMode.INHERENT,                                 null, 
+                   AddressingMode.DIRECT,                AddressingMode.DIRECT, 
+                   AddressingMode.DIRECT,                                 null, 
+             AddressingMode.JMP_RELATIVE, AddressingMode.POST_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+             AddressingMode.ZP_INDEXED_X,          AddressingMode.ZP_INDEXED_X, 
+             AddressingMode.ZP_INDEXED_Y,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.INDEXED_X, 
+                 AddressingMode.INHERENT,                                 null, 
+                                    null,             AddressingMode.INDEXED_Y, 
+                                    null,                                 null, 
+                AddressingMode.IMMEDIATE,  AddressingMode.PRE_INDEXED_INDIRECT, 
+                AddressingMode.IMMEDIATE,                                 null, 
+                AddressingMode.ZP_DIRECT,             AddressingMode.ZP_DIRECT, 
+                AddressingMode.ZP_DIRECT,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.IMMEDIATE, 
+                 AddressingMode.INHERENT,                                 null, 
+                   AddressingMode.DIRECT,                AddressingMode.DIRECT, 
+                   AddressingMode.DIRECT,                                 null, 
+                                    null, AddressingMode.POST_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+             AddressingMode.ZP_INDEXED_X,          AddressingMode.ZP_INDEXED_X, 
+             AddressingMode.ZP_INDEXED_Y,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.INDEXED_X, 
+                 AddressingMode.INHERENT,                                 null, 
+                AddressingMode.INDEXED_X,             AddressingMode.INDEXED_Y, 
+                AddressingMode.INDEXED_Y,                                 null, 
+                AddressingMode.IMMEDIATE,  AddressingMode.PRE_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+                AddressingMode.ZP_DIRECT,             AddressingMode.ZP_DIRECT, 
+                AddressingMode.ZP_DIRECT,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.IMMEDIATE, 
+                 AddressingMode.INHERENT,                                 null, 
+                   AddressingMode.DIRECT,                AddressingMode.DIRECT, 
+                   AddressingMode.DIRECT,                                 null, 
+             AddressingMode.JMP_RELATIVE, AddressingMode.POST_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+                                    null,          AddressingMode.ZP_INDEXED_X, 
+             AddressingMode.ZP_INDEXED_X,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.INDEXED_Y, 
+                                    null,                                 null, 
+                                    null,             AddressingMode.INDEXED_X, 
+                AddressingMode.INDEXED_X,                                 null, 
+                AddressingMode.IMMEDIATE,  AddressingMode.PRE_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+                AddressingMode.ZP_DIRECT,             AddressingMode.ZP_DIRECT, 
+                AddressingMode.ZP_DIRECT,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.IMMEDIATE, 
+                 AddressingMode.INHERENT,                                 null, 
+                   AddressingMode.DIRECT,                AddressingMode.DIRECT, 
+                   AddressingMode.DIRECT,                                 null, 
+             AddressingMode.JMP_RELATIVE, AddressingMode.POST_INDEXED_INDIRECT, 
+                                    null,                                 null, 
+                                    null,          AddressingMode.ZP_INDEXED_X, 
+             AddressingMode.ZP_INDEXED_X,                                 null, 
+                 AddressingMode.INHERENT,             AddressingMode.INDEXED_Y, 
+                                    null,                                 null, 
+                                    null,             AddressingMode.INDEXED_X, 
+                AddressingMode.INDEXED_X,                                 null
+  };
+  
+} // interface J6502Constants

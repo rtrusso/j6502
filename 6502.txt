@@ -1,0 +1,645 @@
+# 6502 specification file
+# Richard Russo <rrusso@cs.ucf.edu>
+# 08062000
+#
+# $ - symbolizes the byte that is being operated on
+# @ - symbolizes the address of that byte
+#
+# NAME - description
+# [flags - 'r' or 'w', no other chars]
+# ---
+# code for the instruction, in terms of $, @,
+# and the j6502 class.
+# ---
+# opcode_1 ADDRESSING_MODE_1   size_in_bytes clock_ticks clocks_exception
+# opcode_2 ...                 ...           ...         ...
+# ...
+# ---
+#
+#
+# The code to be generated will update PC, get $, and @ before the
+# template code is executed.
+#
+# Note on clocks_exception:
+# -------------------------
+#
+# A clocks_exception of 0 means no exception.
+# --
+#
+# A clocks_exception of 1 means that a 1 should be added to the number
+# of clock_ticks if the index in the addressing crosses a page boundary.
+# --
+#
+# A clocks_exception of 2 means that:
+#
+# - 1 should be added if pc is in the same page after the branch
+#   as before
+# - 2 should be added if the branch causes pc to move to a new page
+#
+# (note that clocks_exception == 2 should only occur when the
+#  instruction is a branch instruction)
+# --
+
+
+LDA - load accumulator with memory
+r
+---
+accumulator = $;
+setArithmeticFlags (accumulator);
+---
+A5 ZP_DIRECT             2 3 0
+B5 ZP_INDEXED_X          2 4 0
+A1 PRE_INDEXED_INDIRECT  2 6 0
+B1 POST_INDEXED_INDIRECT 2 5 1
+AD DIRECT                3 4 0
+B9 INDEXED_X             3 4 1
+BD INDEXED_Y             3 4 1
+A9 IMMEDIATE             2 2 0
+---
+
+STA - store accumulator to memory
+w
+---
+$ = accumulator;
+---
+85 ZP_DIRECT             2 3 0
+95 ZP_INDEXED_X          2 4 0
+81 PRE_INDEXED_INDIRECT  2 6 0
+91 POST_INDEXED_INDIRECT 2 6 0
+8D DIRECT                3 4 0
+99 INDEXED_X             3 5 0
+9D INDEXED_Y             3 5 0
+---
+
+LDX - load x register from memory
+r
+---
+regX = $;
+setArithmeticFlags (regX);
+---
+A6 ZP_DIRECT    2 3 0
+B6 ZP_INDEXED_Y 2 4 0
+AE DIRECT       3 4 0
+BE INDEXED_Y    3 4 1
+A2 IMMEDIATE    2 2 0
+---
+
+STX - store x register to memory
+w
+---
+$ = regX;
+---
+86 ZP_DIRECT    2 3 0
+96 ZP_INDEXED_Y 2 4 0
+8E DIRECT       3 4 0
+---
+
+LDY - load y register from memory
+r
+---
+regY = $;
+setArithmeticFlags (regY);
+---
+A4 ZP_DIRECT    2 3 0
+B4 ZP_INDEXED_X 2 4 0
+AC DIRECT       3 4 0
+BC INDEXED_X    3 4 0
+A0 IMMEDIATE    2 2 0
+---
+
+STY - store y register to memory
+w
+---
+$ = regY;
+---
+84 ZP_DIRECT    2 3 0
+94 ZP_INDEXED_X 2 4 0
+8C DIRECT       3 4 0
+---
+
+ADC - add to accumulator with carry
+r
+---
+if (isBCDMode ()) {
+  adcBCD ($);
+} else {
+  adc ($);
+}
+---
+65 ZP_DIRECT             2 3 0
+75 ZP_INDEXED_X          2 4 0
+61 PRE_INDEXED_INDIRECT  2 6 0
+71 POST_INDEXED_INDIRECT 2 5 1
+6D DIRECT                3 4 0
+79 INDEXED_Y             3 4 1
+7D INDEXED_X             3 4 1
+69 IMMEDIATE             2 2 0
+---
+
+AND - bitwise logical and operation, accumulator with memory
+r
+---
+accumulator &= $;
+setArithmeticFlags (accumulator);
+---
+25 ZP_DIRECT             2 3 0
+35 ZP_INDEXED_X          2 4 0
+21 PRE_INDEXED_INDIRECT  2 6 0
+31 POST_INDEXED_INDIRECT 2 5 1
+2D DIRECT                3 4 0
+39 INDEXED_Y             3 4 1
+3D INDEXED_X             3 4 1
+29 IMMEDIATE             2 2 0
+---
+
+BIT - bit test accumulator with memory
+r
+---
+setSign (($ & 0x80) != 0);
+setOverflow (($ & 0x40) != 0);
+setZero ((accumulator & $) != 0);
+---
+24 ZP_DIRECT 2 3 0
+2C DIRECT    3 4 0
+---
+
+CMP - compare accumulator with memory
+r
+---
+cmp (accumulator, $);
+---
+C5 ZP_DIRECT             2 3 0
+D5 ZP_INDEXED_X          2 4 0
+C1 PRE_INDEXED_INDIRECT  2 6 0
+D1 POST_INDEXED_INDIRECT 2 5 1
+CD DIRECT                3 4 0
+D9 INDEXED_Y             3 4 1
+DD INDEXED_X             3 4 1
+C9 IMMEDIATE             2 2 0
+---
+
+EOR - bitwise exclusive or operation, accumulator with memory
+r
+---
+accumulator ^= $;
+setArithmeticFlags (accumulator);
+---
+45 ZP_DIRECT             2 3 0
+55 ZP_INDEXED_X          2 4 0
+41 PRE_INDEXED_INDIRECT  2 6 0
+51 POST_INDEXED_INDIRECT 2 5 1
+4D DIRECT                3 4 0
+59 INDEXED_Y             3 4 1
+5D INDEXED_X             3 4 1
+49 IMMEDIATE             2 2 0
+---
+
+ORA - bitwise or operation, accumulator with memory
+r
+---
+accumulator |= $;
+setArithmeticFlags (accumulator);
+---
+05 ZP_DIRECT             2 3 0
+15 ZP_INDEXED_X          2 4 0
+01 PRE_INDEXED_INDIRECT  2 6 0
+11 POST_INDEXED_INDIRECT 2 5 1
+0D DIRECT                3 4 0
+19 INDEXED_Y             3 4 1
+1D INDEXED_X             3 4 1
+09 IMMEDIATE             2 2 0
+---
+
+SBC - subtract from accumulator with borrow
+r
+---
+if (isBCDMode ()) {
+  sbcBCD ($);
+} else {
+  sbc ($);
+}
+---
+E5 ZP_DIRECT             2 3 0
+F5 ZP_INDEXED_X          2 4 0
+E1 PRE_INDEXED_INDIRECT  2 6 0
+F1 POST_INDEXED_INDIRECT 2 5 1
+ED DIRECT                3 4 0
+F9 INDEXED_Y             3 4 1
+FD INDEXED_X             3 4 1
+E9 IMMEDIATE             2 2 0
+---
+
+INC - increment memory or accumulator
+rw
+---
+$++;
+setArithmeticFlags ($);
+---
+E6 ZP_DIRECT    2 5 0
+F6 ZP_INDEXED_X 2 6 0
+EE DIRECT       3 6 0
+FE INDEXED_X    3 7 0
+---
+
+DEC - decrement memory
+rw
+---
+$--;
+setArithmeticFlags ($);
+---
+C6 ZP_DIRECT    2 5 0
+D6 ZP_INDEXED_X 2 6 0
+CE DIRECT       3 6 0
+DE INDEXED_X    3 7 0
+---
+
+CPX - compare x register to memory
+r
+---
+cmp (regX, $);
+---
+E4 ZP_DIRECT 2 3 0
+EC DIRECT    3 4 0
+E0 IMMEDIATE 2 2 0
+---
+
+CPY - compare y register to memory
+r
+---
+cmp (regY, $);
+---
+C4 ZP_DIRECT 2 3 0
+CC DIRECT    3 4 0
+C0 IMMEDIATE 2 2 0
+---
+
+ROL - rotate memory contents left through carry
+rw
+---
+boolean tmpCarry = isCarry ();
+setCarry (($ & 0x80) != 0);
+$ <<= 1;
+if (tmpCarry) {
+  $++;
+}
+setArithmeticFlags ($);
+---
+26 ZP_DIRECT    2 5 0
+36 ZP_INDEXED_X 2 6 0
+2E DIRECT       3 6 0
+3E INDEXED_X    3 7 0
+2A ACCUMULATOR  1 2 0
+---
+
+ROR - rotate memory contents right through carry
+rw
+---
+boolean tmpCarry = isCarry ();
+setCarry (($ & 0x01) != 0);
+$ >>>= 1;
+if (tmpCarry) {
+  $ |= 0x80;
+}
+setArithmeticFlags ($);
+---
+66 ZP_DIRECT    2 5 0
+76 ZP_INDEXED_X 2 6 0
+6E DIRECT       3 6 0
+7E INDEXED_X    3 7 0
+6A ACCUMULATOR  1 2 0
+---
+
+ASL - arithmetic shift right
+rw
+---
+setCarry (($ & 0x80) != 0);
+$ <<= 1;
+setArithmeticFlags ($);
+---
+06 ZP_DIRECT    2 5 0
+16 ZP_INDEXED_X 2 6 0
+0E DIRECT       3 6 0
+1E INDEXED_X    3 7 0
+0A ACCUMULATOR  1 2 0
+---
+
+LSR - logical shift right
+rw
+---
+setCarry (($ & 0x01) != 0);
+$ >>>= 1;
+setArithmeticFlags ($);
+---
+46 ZP_DIRECT    2 5 0
+56 ZP_INDEXED_X 2 6 0
+4E DIRECT       3 6 0
+5E INDEXED_X    3 7 0
+4A ACCUMULATOR  1 2 0
+---
+
+JMP - transfer control to new memory location
+r
+---
+pc = @;
+---
+4C JMP_DIRECT   3 3 0
+6C JMP_INDIRECT 3 5 0
+---
+
+BCC - branch on carry clear
+r
+---
+if (!isCarry ()) pc += $;
+---
+90 JMP_RELATIVE 2 2 2
+---
+
+BCS - branch on carry set
+r
+---
+if (isCarry ()) pc += $;
+---
+80 JMP_RELATIVE 2 2 2
+---
+
+BEQ - branch on zero flag set
+r
+---
+if (isZero ()) pc += $;
+---
+F0 JMP_RELATIVE 2 2 2
+---
+
+BMI - branch on sign flag set (branch if minus)
+r
+---
+if (isSign ()) pc += $;
+---
+30 JMP_RELATIVE 2 2 2
+---
+
+BNE - branch on zero flag clear
+r
+---
+if (!isZero ()) pc += $;
+---
+D0 JMP_RELATIVE 2 2 2
+---
+
+BPL - branch on sign flag clear (branch if plus)
+r
+---
+if (!isSign ()) pc += $;
+---
+10 JMP_RELATIVE 2 2 2
+---
+
+BVC - branch if overflow flag clear
+r
+---
+if (!isOverflow ()) pc += $;
+---
+50 JMP_RELATIVE 2 2 2
+---
+
+BVS - branch if overflow flag set
+r
+---
+if (isOverflow ()) pc += $;
+---
+70 JMP_RELATIVE 2 2 2
+---
+
+JSR - call subroutine
+r
+---
+pc--;
+push ((byte)((pc >> 8) & 0xff));
+push ((byte)((pc & 0xff)));
+pc = @;
+---
+20 JMP_DIRECT 3 6 0
+---
+
+RTS - return from subroutine
+r
+---
+byte tmpLSB = pop ();
+byte tmpMSB = pop ();
+pc = (char)(((tmpMSB & 0xff) << 8) + (tmpLSB & 0xff));
+pc++;
+---
+60 INHERENT 1 6 0
+---
+
+TAX - transfer accumulator to x register
+r
+---
+regX = accumulator;
+setArithmeticFlags (regX);
+---
+AA INHERENT 1 2 0
+---
+
+TXA - transfer x register to accumulator
+r
+---
+accumulator = regX;
+setArithmeticFlags (accumulator);
+---
+8A INHERENT 1 2 0
+---
+
+TAY - transfer accumulator to y register
+r
+---
+regY = accumulator;
+setArithmeticFlags (regY);
+---
+A8 INHERENT 1 2 0
+---
+
+TYA - transfer y register to accumulator
+r
+---
+accumulator = regY;
+setArithmeticFlags (accumulator);
+---
+98 INHERENT 1 2 0
+---
+
+TSX - transfer stack pointer to x register
+r
+---
+regX = regSP;
+setArithmeticFlags (regX);
+---
+BA INHERENT 1 2 0
+---
+
+TXS - transfer x register to stack pointer
+r
+---
+regSP = regX;
+---
+9A INHERENT 1 2 0
+---
+
+DEX - decrement x register
+r
+---
+regX--;
+setArithmeticFlags (regX);
+---
+CA INHERENT 1 2 0
+---
+
+DEY - decrement y register
+r
+---
+regY--;
+setArithmeticFlags (regY);
+---
+88 INHERENT 1 2 0
+---
+
+INX - increment x register
+r
+---
+regX++;
+setArithmeticFlags (regX);
+---
+E8 INHERENT 1 2 0
+---
+
+INY - increment y register
+r
+---
+regY++;
+setArithmeticFlags (regY);
+---
+C8 INHERENT 1 2 0
+---
+
+PHA - push accumulator on the stack
+r
+---
+push (accumulator);
+---
+48 INHERENT 1 3 0
+---
+
+PLA - pop (pull) accumulator from stack
+r
+---
+accumulator = pop ();
+setArithmeticFlags (accumulator);
+---
+68 INHERENT 1 4 0
+---
+
+PHP - push status register on the stack
+r
+---
+push (getStatus ());
+---
+08 INHERENT 1 3 0
+---
+
+PLP - pop (pull) status register from the stack
+r
+---
+setStatus (pop ());
+---
+28 INHERENT 1 4 0
+---
+
+CLI - clear interrupt flag
+r
+---
+setInterrupt (false);
+---
+58 INHERENT 1 2 0
+---
+
+SEI - set interrupt flag
+r
+---
+setInterrupt (true);
+---
+78 INHERENT 1 2 0
+---
+
+RTI - return from interrupt
+r
+---
+setStatus (pop ());
+byte tmpLSB = pop ();
+byte tmpMSB = pop ();
+pc = (char)(((tmpMSB & 0xff) << 8) + (tmpLSB & 0xff));
+pc++;
+---
+40 INHERENT 1 6 0
+---
+
+BRK - software interrupt
+r
+---
+setBreak (true);
+push ((byte)((pc >> 8) & 0xff));
+push ((byte)(pc & 0xff));
+push (getStatus ());
+setInterrupt (true);
+byte tmpLSB = readMemory ((char)0xfffe);
+byte tmpMSB = readMemory ((char)0xffff);
+pc = (char)(((tmpMSB & 0xff) << 8) + (tmpLSB & 0xff));
+---
+00 INHERENT 1 7 0
+---
+
+CLC - clear carry flag
+r
+---
+setCarry (false);
+---
+18 INHERENT 1 2 0
+---
+
+SEC - set carry flag
+r
+---
+setCarry (true);
+---
+38 INHERENT 1 2 0
+---
+
+CLD - clear decimal flag
+r
+---
+setDecimal (false);
+---
+D8 INHERENT 1 2 0
+---
+
+SED - set decimal flag
+r
+---
+setDecimal (true);
+---
+F8 INHERENT 1 2 0
+---
+
+CLV - clear overflow flag
+r
+---
+setOverflow (false);
+---
+B8 INHERENT 1 2 0
+---
+
+NOP - no operation
+r
+---
+---
+EA INHERENT 1 2 0
+---

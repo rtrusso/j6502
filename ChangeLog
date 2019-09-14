@@ -1,0 +1,26 @@
+2019-09-14  Richard Russo  <rrgithub@outlook.com>
+
+	* Version: changed to 1.1
+
+	* License: now released under the terms of the standard MIT license.
+
+	* Build: changed to gradle.
+
+	* JDK: updated the project to be compatible with OpenJDK 11.
+
+
+2000-08-10  Richard Russo  <rrusso@cs.ucf.edu>
+
+	* API: significant changes, including addition of MemoryModel interface
+
+	* 6502.txt: J6502.java generated from a 6502 specification instead of by hand
+
+	* Feature: clock cycles counting feature added
+
+	* Feature: disassembler class added
+
+	* Feature: debugger application added
+
+2000-02-17  Richard Russo  <rrusso@cs.ucf.edu>
+
+	* Initial release
