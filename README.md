@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/richardtrusso/j6502/_apis/build/status/rtrusso.j6502?branchName=master)](https://dev.azure.com/richardtrusso/j6502/_build/latest?definitionId=2&branchName=master)
+
 Contents
 --------
 
